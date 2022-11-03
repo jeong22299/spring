@@ -43,7 +43,7 @@ function addToCart() {
 	<div class="container">
 		<div class="row" align="left">
 			<div class="col-md-4">
-				<img src="/resources/images/${data.filename}"
+				<img src="/resources/upload${data.filename}"
 				style="width:100%; height: 100%" alt="${data.pname}" title="${data.pname}" />
 			</div>
 			<div class="col-md-4">

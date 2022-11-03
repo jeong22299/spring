@@ -10,19 +10,27 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.multipart.MultipartFile;
 
 import kr.or.ddit.dao.ProductDao;
+import kr.or.ddit.service.ProductService;
 import kr.or.ddit.vo.AttachVO;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnailator;
 
 @Slf4j
+@Controller
 public class FileUploadUtil {
-	private static String uploadFolder = "C:\\eclipse-jee-2020-06-R-win32-x86_64\\workspace\\productSpringProj\\src\\main\\webapp\\resources\\upload";
+	private String uploadFolder = "C:\\eclipse-jee-2020-06-R-win32-x86_64\\workspace\\productSpringProj\\src\\main\\webapp\\resources\\upload";
+	
+	// DI(의존성주입)
+	@Autowired
+	ProductService productService;
 
 	// 파일 업로드 실행
-	public static int fileUploadAction(MultipartFile[] multipartFiles, String tid) {
+	public int fileUploadAction(MultipartFile[] multipartFiles, String tid) {
 		log.info("파일 업로드를 수행합니다.");
 		
 		List<AttachVO> attachVOList = new ArrayList<AttachVO>();
@@ -59,8 +67,8 @@ public class FileUploadUtil {
 				attachVO.setTid(tid);
 				// getFolder() : 연/월/일
 				// uploadFileName : UUID + 파일명
-				attachVO.setAttachName(getFolder().replace("\\", "/") + uploadFileName);
-				log.info("attachName : " + getFolder().replace("\\", "/") + uploadFileName);
+				attachVO.setAttachName( "/" + getFolder().replace("\\", "/") + "/" + uploadFileName);
+				log.info("attachName : " + getFolder().replace("\\", "/") + "/" + uploadFileName);
 				attachVO.setAttachSize(Long.valueOf(multipartFile.getSize()).intValue());
 				attachVO.setAttachType(Files.probeContentType(saveFile.toPath()));
 				
@@ -84,14 +92,15 @@ public class FileUploadUtil {
 			log.info("attachVO : " + attachVO.toString());
 		}
 		
-		ProductDao productDao = new ProductDao();
-		productDao.insertAttach(attachVOList);
+		// Attach 테이블에 insert 실행
+		int result = productService.insertAttach(attachVOList);
+		log.info("ATTACH 테이블에 insert 결과 : " + result);
 		
 		log.info("파일 업로드를 완료했습니다.");
-		return 0;
+		return result;
 	}
 	
-	public static String getFolder() {
+	public String getFolder() {
 		// 2022-10-28 형식(format) 지정
 		// 간단한 날짜 형식
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -107,7 +116,7 @@ public class FileUploadUtil {
 	// 이미지인지 체킹(썸네일 용)
 	// 모바일과 같은 환경에서 많은 데이터를 소비해야 하므로
 	// 이미지의 경우 특별한 경우가 아니면 썸네일을 제작해줘야 함
-	public static boolean checkImageType(File file) {
+	public boolean checkImageType(File file) {
 		/*
 		 	.jpeg / .jpg(JPEG 이미지)의 MIME 타입 : image/jpeg
 		 */

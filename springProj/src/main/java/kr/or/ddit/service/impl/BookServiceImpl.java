@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import kr.or.ddit.dao.BookDao;
 import kr.or.ddit.service.BookService;
+import kr.or.ddit.vo.AttachVO;
 import kr.or.ddit.vo.BookVO;
 
 // "프링아 이 클래스는 서비스 클래스야"라고 스프링에게 알려줌.
@@ -49,4 +50,10 @@ public class BookServiceImpl implements BookService {
 	public int delete(int bookId) {
 		return this.bookDao.delete(bookId);
 	}
+	
+	// BOOK 테이블의 기본키 자동생성 
+	public int insertAttach(List<AttachVO> attachVOList) {
+		return this.bookDao.insertAttach(attachVOList);
+	}
+
 }

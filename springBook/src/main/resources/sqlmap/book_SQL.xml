@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace : xml파일은 여러개일 수 있으므로 이를 구분하기 위한 식별 용도로 사용 -->
+<mapper namespace="book">
+	<!-- MyBatis에서 제공해주는 데이터 입력을 나타내는 태그
+		1) 드루와 : Dao 객체가 던진 데이터타입(String, int, hashMap, VO, List)
+					parameterType만 씀 
+		2) 가즈아 : Dao 객체의 메소드 쪽으로 리턴할 타입
+				- resultType : String, int, VO, hashMap 
+				- resultMap : MyBatis의 resultMap 태그를 사용
+		3) insert, update, delete 태그의 resultType은 생략 => 0 또는 반영된 개수
+		
+		-->
+	<!-- BOOK 테이블에 insert -->
+	<insert id="insert" parameterType="kr.or.ddit.vo.BookVO">
+		INSERT INTO BOOK_MARKET(BOOK_ID, NAME, UNIT_PRICE, DESCRIPTION, AUTHOR, PUBLISHER, CATEGORY, UNITS_IN_STOCK, TOTAL_PAGES, RELEASE_DATE, CONDITION, FILENAME)
+		VALUES(#{bookId}, #{name}, #{unitPrice}, #{description}, #{author}, #{publisher}, #{category}, #{unitsInStock}, #{totalPages}, #{releaseDate}, #{condition}, #{filename})
+	</insert>
+	
+	<!-- 책 상세보기 
+		select 태그는 조회(select) 쿼리를 실행하기 위한 mybatis 태그
+		parameterType(book_SQL.xml로 드루와) : bookVO 타입
+		resultType(bookDAO로 가즈아) : bookVO타입
+	-->	
+	<select id="select_detail" parameterType="bookVO" resultType="bookVO">
+		SELECT  BOOK_ID, NAME, UNIT_PRICE, DESCRIPTION, AUTHOR, PUBLISHER, CATEGORY, UNITS_IN_STOCK, TOTAL_PAGES, RELEASE_DATE, CONDITION, FILENAME
+		FROM    BOOK_MARKET
+		WHERE   BOOK_ID = #{bookId}
+	</select>
+	
+	
+	<!-- 책 목록 
+	where 1=1 은 항상 '참'
+	조건이 2개 이상일 때 WHERE + AND
+	조건이 1개일대 WHERE이어야 함
+		WHERE(생략)
+		AND => 오류발생
+		WHERE 1 = 1
+		AND (생략)
+		AND => 정상
+	
+	드루와 : {"keyWord":"개똥"}
+	가즈아 : bookVO
+	 -->
+	<select id="list" resultType="bookVO" parameterType="string">
+		SELECT  BOOK_ID, NAME, UNIT_PRICE, DESCRIPTION, AUTHOR, PUBLISHER, CATEGORY, UNITS_IN_STOCK, TOTAL_PAGES, RELEASE_DATE, CONDITION, FILENAME
+		FROM    BOOK_MARKET
+		WHERE	1 = 1	
+		<if test="keyword!=null and keyword!=''">
+			AND	(NAME LIKE '%' || #{keyword} || '%' 
+			OR  CATEGORY LIKE '%' || #{keyword} || '%')
+		</if>
+		ORDER BY NAME DESC
+	</select>
+	
+	<!--  책 수정하기. update 태그는 update SQL문을 실행하기 위한 마이바티스 태그 -->
+	<update id="update" parameterType="bookVO">
+		UPDATE  BOOK
+		SET     TITLE=#{title}, CATEGORY=#{category}, PRICE=#{price}
+		WHERE   BOOK_ID=#{bookId}
+	</update>
+	
+	<!-- 책 삭제하기. delete 태그는 삭제 SQL를 실행하기 위한 mybatis 태그 
+		resultType="int" 생략가능
+	-->
+	<delete id="delete" parameterType="int">
+		DELETE FROM BOOK
+		WHERE  BOOK_ID = #{bookId} 
+	</delete>
+</mapper>
+
+
+
+
+
+
+
+

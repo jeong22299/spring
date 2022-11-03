@@ -4,7 +4,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<link rel="stylesheet" href="/resources/css/bootstrap.min.css">
 <title>상품 등록</title>
 <style type="text/css">
 	.imgs_wrap{
@@ -15,6 +14,7 @@
 		max_width:100%;
 	}
 </style>
+<link rel="stylesheet" href="/resources/css/bootstrap.min.css">
 <script type="text/javascript" src="/resources/js/jquery.min.js"></script>
 <script type="text/javascript">
 $(function(){
@@ -54,11 +54,25 @@ $(function(){
 		});
 	}
 	// 이미지 미리보기 끝  ////////////////
+	
+	// PRODUCT 테이블의 PRODUCT_ID 자동생성
+	$.ajax({
+		url: "getProductId",
+		dataType:"JSON",
+		type:"post",
+		success:function(result){
+			console.log("result : "+ JSON.stringify(result));
+			console.log("result.productId : "+ result.productId);
+			$("#productId").val(result.productId);
+		}
+	});
 });
+	
 </script>
 
 </head>
 <body>
+ 	<jsp:include page="menu.jsp" />
  	<div class="jumbotron">
  		<!-- 내용드루와 -->
  		<div class="container">
@@ -72,7 +86,7 @@ $(function(){
  			  <div class="form-group row">
  			  	<label class="col-sm-2">상품 코드</label>
  			  	<div class="col-sm-3">
- 			  		<input type="text" id="productId" name="productId" class="form-control">
+ 			  		<input type="text" id="productId" name="productId" class="form-control" readonly="readonly">
  			  	</div>
  			  </div>
  			  <div class="form-group row">

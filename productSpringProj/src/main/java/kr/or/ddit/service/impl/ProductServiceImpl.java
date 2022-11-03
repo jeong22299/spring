@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import kr.or.ddit.dao.ProductDao;
 import kr.or.ddit.service.ProductService;
 import kr.or.ddit.util.FileUploadUtil;
+import kr.or.ddit.vo.AttachVO;
 import kr.or.ddit.vo.CartVO;
 import kr.or.ddit.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +24,19 @@ public class ProductServiceImpl implements ProductService {
 	@Autowired
 	ProductDao productDao;
 	
+	@Autowired
+	FileUploadUtil fileUploadUtil;
+	
 	@Override
 	public int insert(ProductVO productVO) {
 		// PRODUCT 테이블에 INSERT
 		int result = this.productDao.insert(productVO);
 		// ATTACH 테이블에 다중 INSERT
 		if(result > 0) { // INSERT 성공 시
+			// 파일업로드 및 INSERT수행 => 안됨
+//			FileUploadUtil.fileUploadAction(productVO.getProductImage(), productVO.getProductId());
 			// 파일업로드 및 INSERT수행
-			FileUploadUtil.fileUploadAction(productVO.getProductImage(), productVO.getProductId());
+			fileUploadUtil.fileUploadAction(productVO.getProductImage(), productVO.getProductId());
 		}
 		return result;
 	}
@@ -65,7 +71,18 @@ public class ProductServiceImpl implements ProductService {
 		log.info("cartInCnt : " + cartInCnt);
 		// 2. CART_DET 테이블에 INSERT
 		
-		
 		return 0;
+	}
+	
+	// ATTACH 테이블에 다중 INSERT
+	@Override
+	public int insertAttach(List<AttachVO> attachVOList) {
+		return this.productDao.insertAttach(attachVOList);
+	}
+	
+	// PRODUCT 테이블의 기본키 자동생성 
+	@Override
+	public String getProductId() {
+		return this.productDao.getProductId();
 	}
 }

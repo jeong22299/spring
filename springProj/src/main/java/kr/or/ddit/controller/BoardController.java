@@ -2,21 +2,35 @@ package kr.or.ddit.controller;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import javax.inject.Inject;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import kr.or.ddit.service.BoardService;
+import kr.or.ddit.util.ArticlePage;
+import kr.or.ddit.util.FileUploadUtil;
 import kr.or.ddit.vo.BookVO;
+import kr.or.ddit.vo.MemberListVO;
 import lombok.extern.slf4j.Slf4j;
 
 // 프링아 이거 자바빈 객체로 관리해줘
@@ -31,6 +45,10 @@ public class BoardController {
 	 	- 클래스 레벨로 요청 경로를 지정하면 메서드 레벨에서 지정한 경로의 기본 경로로 취급됨
 	 	- 클래스 레벨의 요청 경로에 메서드 레벨의 요청 경로를 덧붙인 형태가 최종 경로가 됨
 	 */
+	
+	@Inject
+	FileUploadUtil fileUploadUtil;
+	
 	// value 속성에 요청 경로 값을 입력
 	@RequestMapping(value="/register")
 	public  void registerForm() {
@@ -207,6 +225,207 @@ public class BoardController {
 		bookVOList.add(bookVO);
 		
 		return bookVOList;
+	}
+	
+	@Autowired
+	BoardService bs;
+	
+	// 요청 URI : http://localhost/board/boardlist?currentPage=5
+	// 요청파라미터 : currentPage=5
+	@GetMapping("/boardlist")
+	public String boardList(Model model,
+			@RequestParam(defaultValue = "1", required = false) int currentPage, 
+			@RequestParam Map<String, String> map) {
+		log.info("currentPage : " + currentPage);
+		
+		// 	/board/boardlist 이렇게 요청 되었을 경우 처리
+		String cPage = map.get("currentPage");
+		String show = map.get("show");
+		String keyword = map.get("keyword");
+		
+		if(cPage==null) {
+			map.put("currentPage", "1");
+		}
+		if(show==null) {
+			map.put("show","10");
+		}
+		if(keyword==null) {
+			map.put("keyword", "");
+		}
+		
+		
+		log.info("map : " + map);
+		
+		List<MemberListVO> list = bs.list(map);
+		
+		// 한 화면에 보여질 행의 수
+		int size = Integer.parseInt(map.get("show"));
+		
+		//  MEM 테이블의 전체 행의 수 구함 
+		int total = this.bs.getTotal(map);
+		
+		// (전체 글 수, 현재페이지, 한 화면에 보여질 행 수 , select 결과 list)
+		model.addAttribute("data", new ArticlePage<MemberListVO>(total, currentPage, size, list));
+		return "board/boardlist";
+	}
+	
+	@GetMapping("/addBoard")
+	public String addBoard() {
+		return "board/addBoard";
+	}
+	
+	@RequestMapping(value="/addBoard", method=RequestMethod.POST)
+	public ModelAndView create2Post(ModelAndView mav, @ModelAttribute MemberListVO memVO) {
+		int result = this.bs.insert(memVO);
+		
+		if(result < 1) {
+			mav.setViewName("redirect:/addBoard");
+		} else {
+			mav.setViewName("redirect:/board/boardlist");
+		}
+		return mav;
+	}
+	
+	// 요청URI : /board/chkDup
+	// 요청파라미터 : {"memId" : "abc001"}
+	// 방식 : post
+	// JSON데이터로 리턴, 중복이 있으면{"result" : "1"}, 중복이 없으면 {"result":"0"}
+	// 골뱅이RequestParam Map<String, String> map => 문제발생
+	// String memId => 문제발생
+	// 결론 : ajax로 요청된 JSON 데이터는 무조건 RequestBody로 받자
+	@ResponseBody
+	@PostMapping("/chkDup")
+	public Map<String, String> chkDup(
+			@RequestBody Map<String, String> json) {
+		
+		log.info("json" + json);
+		
+		Map<String, String> rsltMap = new HashMap<String, String>();
+		
+		int result = this.bs.chkDup(json.get("memId"));
+		
+		rsltMap.put("result", result+"");
+		
+		return rsltMap;
+	}
+	
+	/*  8. 파일업로드 폼 방식 요청 처리
+		 	파일 업로드 폼 파일<input type="file"...> 요소(=태그) 값을
+		 	스프링 MVC가 지원하는 MultipartFile 매개변수로 처리함 
+	 */
+	@GetMapping("/register06")
+	public String register06() {
+		log.info("register06에 왔다");
+		
+		return "/board/register06";
+	}
+	
+	@PostMapping("/registerFile01")
+	public String registerFile01Post(MultipartFile picture) {
+		log.info("registerFile01");
+		log.info("originalName : " + picture.getOriginalFilename());
+		log.info("Size : " + picture.getSize());
+		log.info("" + picture.getContentType());
+		
+		return "/board/success";
+	}
+	
+	@PostMapping("/registerFile02")
+	public String registerFile02Post(String userId, String password,
+			MultipartFile picture) {
+		log.info("registerFile02");
+		log.info("userId : "+ userId);
+		log.info("password : " + password);
+		
+		log.info("originalName : " + picture.getOriginalFilename());
+		log.info("Size : " + picture.getSize());
+		log.info("" + picture.getContentType());
+		
+		return "/board/success";
+	}
+	
+	
+	@PostMapping("/registerFile03")
+	public String registerFile03Post(MemberListVO memVO,
+			MultipartFile picture) {
+		log.info("registerFile03");
+		log.info("memVO : " + memVO.toString());
+		
+		log.info("originalName : " + picture.getOriginalFilename());
+		log.info("Size : " + picture.getSize());
+		log.info("" + picture.getContentType());
+		
+		return "/board/success";
+	}
+	
+	@PostMapping("/registerFile05")
+	public String registerFile05Post(MemberListVO memVO,
+			MultipartFile picture, MultipartFile picture2) {
+		log.info("registerFile05");
+		log.info("memVO : " + memVO.toString());
+		
+		log.info("originalName : " + picture.getOriginalFilename());
+		log.info("Size : " + picture.getSize());
+		log.info("" + picture.getContentType());
+		
+		log.info("originalName : " + picture2.getOriginalFilename());
+		log.info("Size : " + picture2.getSize());
+		log.info("" + picture2.getContentType());
+		
+		return "/board/success";
+	}
+	
+	
+	@PostMapping("/registerFile06")
+	public String registerFile06Post(MemberListVO memVO,
+			List<MultipartFile> pictureList) {
+		log.info("registerFile06");
+		log.info("memVO : " + memVO.toString());
+		
+		for(MultipartFile picture : pictureList) {
+			log.info("originalName : " + picture.getOriginalFilename());
+			log.info("Size : " + picture.getSize());
+			log.info("" + picture.getContentType());
+		}
+		return "/board/success";
+	}
+	
+	
+	@PostMapping("/registerFile07")
+	public String registerFile07Post(MemberListVO memVO,
+			MultipartFile pictures) {
+		log.info("registerFile06");
+		log.info("memVO : " + memVO.toString());
+		
+		MultipartFile[] pictureArray = memVO.getPictureArray();
+		
+		for(MultipartFile picture : pictureArray) {
+			log.info("originalName : " + picture.getOriginalFilename());
+			log.info("Size : " + picture.getSize());
+			log.info("" + picture.getContentType());
+		}
+		return "/board/success";
+	}
+	
+	@GetMapping("/register07")
+	public String register07Get() {
+		
+		return "board/register07";
+	}
+	
+	// 요청 URI : /board/uploadAjax
+	@RequestMapping(value = "/uploadAjax", method = RequestMethod.POST
+			, produces = "text/plain;charset=UTF-8")
+	public ResponseEntity<String> uploadAjax(MultipartFile[] file){
+		String originalFileName = file[0].getOriginalFilename();
+		log.info("originalName : " + originalFileName);
+		ResponseEntity<String> entity = 
+				new ResponseEntity<String>("SUCCESS" + originalFileName, HttpStatus.OK);
+		
+		UUID uid = UUID.randomUUID();
+		
+		this.fileUploadUtil.fileUploadAction(file, uid.toString());
+		return entity;
 	}
 }
 
