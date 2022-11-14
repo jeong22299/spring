@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -34,6 +35,7 @@ import kr.or.ddit.vo.CartDetVO;
 import kr.or.ddit.vo.CartVO;
 import kr.or.ddit.vo.ProductVO;
 import lombok.extern.slf4j.Slf4j;
+
 
 @Slf4j
 @Controller
@@ -68,6 +70,12 @@ public class ProductController {
 	}
 	
 	// 상품목록
+	// 1) 로그인한 사용자만 접근가능
+	// 골뱅이PreAuthorize("isAuthenticated()")
+	// 2) 회원 권한을 가진 사용자만 접근 가능
+	// 골뱅이PreAuthorize("hasRole('ROLE_MEMBER')")
+	// 3) 회원권한 또는 관리자권한을 가진 사용자만 접근 가능(Any : 또는(or연산))
+	@PreAuthorize("hasAnyRole('ROLE_MEMBER', 'ROLE_ADMIN')")
 	@RequestMapping(value="/products", method=RequestMethod.GET)
 	public ModelAndView list(ModelAndView mav, @RequestParam(value="keyword", required=false) String keyword) {
 		// Model

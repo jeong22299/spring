@@ -29,9 +29,11 @@ import org.springframework.web.servlet.ModelAndView;
 import kr.or.ddit.service.BoardService;
 import kr.or.ddit.util.ArticlePage;
 import kr.or.ddit.util.FileUploadUtil;
+import kr.or.ddit.vo.AttachVO;
 import kr.or.ddit.vo.BookVO;
 import kr.or.ddit.vo.MemberListVO;
 import lombok.extern.slf4j.Slf4j;
+
 
 // 프링아 이거 자바빈 객체로 관리해줘
 @RequestMapping("/board")
@@ -426,6 +428,28 @@ public class BoardController {
 		
 		this.fileUploadUtil.fileUploadAction(file, uid.toString());
 		return entity;
+	}
+	
+	// 요청URI : /board/detail?memId=a001
+	// URL : /board/detail
+	// 요청 파라미터 : memId=a001
+	@GetMapping("/detail")
+	public String detail(String memId, Model model) {
+		log.info("memId : " + memId);
+		
+		// 회원 상세정보(1)
+		MemberListVO memVO = this.bs.detail(memId);
+		
+		// 회원 증명 사진(N)
+		List<AttachVO> attachVOList = memVO.getAttachVOList();
+		
+		log.info("memVO : " + memVO.toString());
+		log.info("attachVOList : " + attachVOList.toString());
+		
+		model.addAttribute("memVO", memVO);
+		model.addAttribute("attachVOList", attachVOList);
+		
+		return "board/detail";
 	}
 }
 

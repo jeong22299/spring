@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"  %>  
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"  %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>  
 <!DOCTYPE html>
 <html>
 <head>
@@ -55,17 +56,28 @@ $(function(){
 	}
 	// 이미지 미리보기 끝  ////////////////
 	
+	
 	// PRODUCT 테이블의 PRODUCT_ID 자동생성
-	$.ajax({
-		url: "getProductId",
-		dataType:"JSON",
-		type:"post",
-		success:function(result){
-			console.log("result : "+ JSON.stringify(result));
-			console.log("result.productId : "+ result.productId);
-			$("#productId").val(result.productId);
-		}
-	});
+	let header = "${_csrf.headerName}";
+	let token  = "${_csrf.token}";
+   
+//    alert("header : " + header + ", token : " + token);
+   //PRODUCT 테이블의 PRODUCT_ID 자동생성
+   //아작났어유..피씨다타써
+   //dataType : 응답타입
+   $.ajax({
+      url:"/getProductId",
+      beforeSend:function(xhr){
+         xhr.setRequestHeader(header,token);
+      },
+      type:"post",
+      dataType:"json",
+      success:function(result){
+         console.log("result : " + JSON.stringify(result));
+         console.log("result.productId : " + result.productId);
+         $("#productId").val(result.productId);
+      }
+   });
 });
 	
 </script>
@@ -153,6 +165,12 @@ $(function(){
 				</div>
 			</div>
 		</form>
+		<!-- 사용자 정보 -->
+		<p>principal : <sec:authentication property="principal"/></p>
+		<p>memberVO : <sec:authentication property="principal.memberVO"/></p>
+		<p>사용자 이름 : <sec:authentication property="principal.memberVO.memName"/></p>
+		<p>사용자 아이디 : <sec:authentication property="principal.memberVO.memId"/></p>
+		<p>사용자 권한 리스트 : <sec:authentication property="principal.memberVO.memberAuthVOList"/></p>
  	</div>
  	<!-- =========== 상품 등록 끝 ============ -->
 </body>

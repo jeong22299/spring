@@ -146,7 +146,7 @@
 						class="icon text-white-50"> <i class="fas fa-flag"></i>
 					</span> <span class="text">등록</span>
 					</button>
-					<a href="/board/boardlist"   class="btn btn-secondary btn-icon-split" disabled> <span
+					<a href="/board/boardlist"   class="btn btn-secondary btn-icon-split" disabled > <span
 						class="icon text-white-50"> <i class="fas fa-flag"></i>
 					</span> <span class="text">취소</span>
 					</a>

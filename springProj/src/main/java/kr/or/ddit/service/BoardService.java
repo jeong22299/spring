@@ -22,5 +22,8 @@ public interface BoardService {
 	// 아이디 중복체크
 	public int chkDup(String memId);
 
+	// 상세보기
+	public MemberListVO detail(String memId);
+
 
 }

@@ -27,13 +27,12 @@ public class BoardDao {
 	}
 	
 	//  MEM 테이블의 전체 행의 수 구함 
-//	<select id="getTotal" resultType="int">
 	public int getTotal(Map<String, String> map) {
 		return this.sqlSessionTemplate.selectOne("board.getTotal", map);
 	}
 	
 	// 게시판 등록
-	public int insert(MemberListVO memVO) {
+	public int memInsert(MemberListVO memVO) {
 		return this.sqlSessionTemplate.insert("board.memInsert", memVO);
 	}
 

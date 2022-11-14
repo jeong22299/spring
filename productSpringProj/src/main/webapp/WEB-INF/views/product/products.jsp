@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"%>
 <%@page import="java.util.List"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>  
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,11 +18,10 @@
 		<!-- container : 이 안에 내용있다 -->
 		<div class="container">
 			<h1 class="display-3">상품 목록</h1>
-		<form>
-		<br>
-			<input type="text" placeholder="검색어를 입력하세요" name="keyword" value="${param.keyword}" class="form-control col-sm-3 d-inline">
-			<input type="submit" value="검색" class="btn btn-outline-info ">
-		</form>
+				<form>
+					<input type="text" placeholder="검색어를 입력하세요" name="keyword" value="${param.keyword}" class="form-control col-sm-3 d-inline" >
+					<input type="submit" value="검색" class="btn btn-outline-info ">
+				</form>
 		</div>
 		<div class="form-group row" style="float: right;">
 			<div class="col-sm-offset-2 col-sm-10">

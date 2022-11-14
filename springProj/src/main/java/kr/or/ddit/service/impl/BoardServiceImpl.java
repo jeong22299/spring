@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import kr.or.ddit.dao.BoardDao;
+import kr.or.ddit.mapper.MemMapper;
 import kr.or.ddit.service.BoardService;
 import kr.or.ddit.service.BookService;
 import kr.or.ddit.util.FileUploadUtil;
@@ -25,19 +26,22 @@ public class BoardServiceImpl implements BoardService {
 	@Autowired
 	BoardDao boardDao;
 	
+	@Autowired
+	MemMapper memMapper;
+	
 	@Inject
 	FileUploadUtil fileUploadUtil;
 	
 	// 게시판 목록보기
 	@Override
 	public List<MemberListVO> list(Map<String, String> map){
-		return this.boardDao.list(map);
+		return this.memMapper.memList(map);
 	}
 	
 	//  MEM 테이블의 전체 행의 수 구함 
 	@Override
 	public int getTotal(Map<String, String> map) {
-		return this.boardDao.getTotal(map);
+		return this.memMapper.getTotal(map);
 	}
 	
 	// 게시판 등록
@@ -45,7 +49,7 @@ public class BoardServiceImpl implements BoardService {
 	@Override
 	public int insert(MemberListVO memVO) {
 		// MEM 테이블에 insert
-		this.boardDao.insert(memVO);
+		this.memMapper.memInsert(memVO);
 		// FileUploadUtil 활용 => 업로드, ATTACH 테이블에 INSERT
 		return this.fileUploadUtil.fileUploadAction(memVO.getPictureArray(), memVO.getMemId());
 		
@@ -53,7 +57,13 @@ public class BoardServiceImpl implements BoardService {
 	
 	// 아이디 중복 체크
 	@Override
-		public int chkDup(String memId) {
-			return this.boardDao.chkDup(memId);
-		}
+	public int chkDup(String memId) {
+		return this.memMapper.chkDup(memId);
+	}
+	
+	// 상세보기
+	@Override
+	public MemberListVO detail(String memId){
+		return this.memMapper.detail(memId);
+	}
 }

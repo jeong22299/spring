@@ -13,7 +13,7 @@ $(function(){
 
 	<div class="card shadow mb-4">
 		<div class="card-header py-3">
-			<h6 class="m-0 font-weight-bold text-primary">회원정보</h6>
+			<h6 class="m-0 font-weight-bold text-primary">게시판</h6>
 		</div>
 		<div class="card-body">
 			<div class="table-responsive">
@@ -100,7 +100,7 @@ $(function(){
 											<tr class="odd">
 										</c:if>
 											<td>${list.memId}</td>
-											<td>${list.memName}</td>
+											<td><a href="/board/detail?memId=${list.memId}">${list.memName}</a></td>
 											<td>${list.memJob}</td>
 											<td>${list.memLike}</td>
 											<td>${list.memHp}</td>
